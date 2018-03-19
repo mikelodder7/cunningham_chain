@@ -1,0 +1,9 @@
+[package]
+name = "cunningham_chain"
+version = "0.1.0"
+authors = ["Michael Lodder <redmike7@gmail.com>"]
+
+[dependencies]
+openssl = { version = "0.10.5" }
+lazy_static = { version = "1.0.0" }
+int_traits = { version = "0.1.1" }
