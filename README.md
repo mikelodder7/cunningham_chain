@@ -32,5 +32,7 @@ All parameters are optional. Default values are bits=16, length=2, and kind=1
 The following are allowed parameters
 
 *bits* - A positive integer. The number of bits to use for generating the primes
+
 *length* A positive integer. The minimum length of the Cunningham chain to find. The program will stop once it finds a chain equal to or longer than this value.
+
 *kind* 1 or 2. 1 = 1st kind. 2 = 2nd kind.
