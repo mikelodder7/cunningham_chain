@@ -7,15 +7,21 @@ The program uses openssl's prime generator to find big primes and test for prima
 
 ## Building Cunningham Chain Generator
 1. Install Rust and rustup (https://www.rust-lang.org/en-US/install.html)
-1. Checkout and build the executable:
+1. Checkout the program:
 
 ```
 git clone https://github.com/mikelodder7/cunningham_chain.git
+```
+
+3. This relies on the openssl crate. See https://crates.io/crates/openssl to install the necessary dependecies.
+3. Build the executable
+
+```
 cd ./cunningham_chain
 cargo build --release
 ```
 
-1. Rust tests
+5. Rust tests
 
 ```
 cd ./cunningham_chain
