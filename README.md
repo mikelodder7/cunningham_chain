@@ -1,5 +1,5 @@
 # Cunningham Chain Generator
-Generate a cunninghame chain for both 1st and 2nd kinds.
+Generate a cunningham chain for both 1st and 2nd kinds.
 
 Cunningham chains have many uses particularly in cryptography.
 
