@@ -37,6 +37,7 @@ fn main() {
 
     println!("Finding chain with {} bits and {} length of {:?} kind", bits, length, kind);
 
+    //TODO: If using ECPP then also print the certificate
     let primes = 
         match kind {
             CunninghamKind::FIRST => first_kind(bits, length),
@@ -46,6 +47,7 @@ fn main() {
     println!("\n");
     println!("Found cunningham {:?} kind of length {}", kind, primes.len());
 
+    //TODO: Possibly offer AKS testing to prove the primes
     let mut index = 1;
     for p in &primes {
         println!("{} = {}", index, p.to_dec().unwrap());

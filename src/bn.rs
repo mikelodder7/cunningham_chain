@@ -52,14 +52,14 @@ impl BigNumber {
     pub fn is_safe_prime(&self, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
         // according to https://eprint.iacr.org/2003/186.pdf
         // we can test if the number is congruent to 2 mod 3
-        // if it fails then its not a safe prime
-        if self.modulus(&THREE, ctx)?.bignumber == TWO.bignumber && self.is_prime(ctx)? {
-            // for "safe prime" generation, check that (p-1)/2 is prime. Since a
-            // prime is odd, We just need to divide by 2
-            Ok(self.rshift1()?.is_prime(ctx)?)
-        } else {
-            Ok(false)
-        }
+        // for "safe prime" generation, check that (p-1)/2 is prime. Since a
+        // prime is odd, just divide by 2
+        //TODO: FUTURE see if ECPP would be faster that openssl.is_prime
+        Ok(
+            self.modulus(&THREE, ctx)?.bignumber == TWO.bignumber &&
+            self.is_prime(ctx)? &&
+            self.rshift1()?.is_prime(ctx)?
+        )
     }
     
     pub fn is_prime(&self, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
