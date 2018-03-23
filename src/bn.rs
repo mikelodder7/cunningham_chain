@@ -1,4 +1,4 @@
-use openssl::bn::{BigNum, BigNumRef, BigNumContext};
+use openssl::bn::{BigNum, BigNumRef, BigNumContext, MsbOption};
 use openssl::error::ErrorStack;
 
 use int_traits::IntTraits;
@@ -50,6 +50,12 @@ impl BigNumber {
     }
 
     pub fn is_safe_prime(&self, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+        let prime_len = self.to_dec()?.len();
+        let checks = prime_len.log2() as i32;
+        self.is_safe_prime_fast(checks, ctx)
+    }
+
+    pub fn is_safe_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
         // according to https://eprint.iacr.org/2003/186.pdf
         // we can test if the number is congruent to 2 mod 3
         // for "safe prime" generation, check that (p-1)/2 is prime. Since a
@@ -57,15 +63,25 @@ impl BigNumber {
         //TODO: FUTURE see if ECPP would be faster that openssl.is_prime
         Ok(
             self.modulus(&THREE, ctx)?.bignumber == TWO.bignumber &&
-            self.is_prime(ctx)? &&
-            self.rshift1()?.is_prime(ctx)?
+            self.is_prime_fast(checks, ctx)? &&
+            self.rshift1()?.is_prime_fast(checks, ctx)?
         )
+    }
+
+    pub fn rand(size: usize) -> Result<BigNumber, ErrorStack> {
+        let mut bn = BigNumber::new()?;
+        BigNumRef::rand(&mut bn.bignumber, size as i32, MsbOption::MAYBE_ZERO, true)?;
+        Ok(bn)
+    }
+
+    pub fn is_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+        Ok(self.bignumber.is_prime(checks, &mut ctx.context)?)
     }
     
     pub fn is_prime(&self, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
         let prime_len = self.to_dec()?.len();
         let checks = prime_len.log2() as i32;
-        Ok(self.bignumber.is_prime(checks, &mut ctx.context)?)
+        self.is_prime_fast(checks, ctx)
     }
 
     pub fn from_u32(n: usize) -> Result<BigNumber, ErrorStack> {

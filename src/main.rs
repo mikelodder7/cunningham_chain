@@ -1,10 +1,13 @@
 extern crate openssl;
 extern crate int_traits;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 
 use std::env;
 use std::io::Write;
 use std::collections::LinkedList;
+
+use int_traits::IntTraits;
 
 use bn::BigNumber;
 use kind::CunninghamKind;
@@ -37,11 +40,13 @@ fn main() {
 
     println!("Finding chain with {} bits and {} length of {:?} kind", bits, length, kind);
 
+    let prime_len = BigNumber::rand(bits).unwrap().to_dec().unwrap().len();
+    let checks = prime_len.log2() as i32;
     //TODO: If using ECPP then also print the certificate
     let primes = 
         match kind {
-            CunninghamKind::FIRST => first_kind(bits, length),
-            CunninghamKind::SECOND => second_kind(bits, length)
+            CunninghamKind::FIRST => first_kind(bits, length, checks),
+            CunninghamKind::SECOND => second_kind(bits, length, checks)
         };
 
     println!("\n");
@@ -56,7 +61,7 @@ fn main() {
     println!("\n");
 }
 
-fn first_kind(bits: usize, length: usize) -> LinkedList<BigNumber> {
+fn first_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> {
     let mut ctx = BigNumber::new_context().unwrap();
     let mut primes = LinkedList::new();
     let mut attempt = 1;
@@ -75,12 +80,12 @@ fn first_kind(bits: usize, length: usize) -> LinkedList<BigNumber> {
         loop {
             let higher = primes.back().unwrap().lshift1().unwrap().increment().unwrap();
 
-            if higher.is_safe_prime(&mut ctx).unwrap() {
+            if higher.is_safe_prime_fast(checks, &mut ctx).unwrap() {
                 primes.push_back(higher);
             } else {
                 let lower = primes.front().unwrap().rshift1().unwrap();
 
-                if lower.is_prime(&mut ctx).unwrap() {
+                if lower.is_prime_fast(checks, &mut ctx).unwrap() {
                     primes.push_front(lower);
                 } else {
                     break;
@@ -102,7 +107,7 @@ fn first_kind(bits: usize, length: usize) -> LinkedList<BigNumber> {
     primes
 }
 
-fn second_kind(bits: usize, length: usize) -> LinkedList<BigNumber> {
+fn second_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> {
     let mut ctx = BigNumber::new_context().unwrap();
     let mut primes = LinkedList::new();
     let mut stdout = std::io::stdout();
@@ -120,11 +125,11 @@ fn second_kind(bits: usize, length: usize) -> LinkedList<BigNumber> {
 
         loop {
             let higher = primes.back().unwrap().lshift1().unwrap().decrement().unwrap();
-            if higher.is_prime(&mut ctx).unwrap() {
+            if higher.is_prime_fast(checks,&mut ctx).unwrap() {
                 primes.push_back(higher);
             } else {
                 let lower = primes.front().unwrap().increment().unwrap().rshift1().unwrap();
-                if lower.is_prime(&mut ctx).unwrap() {
+                if lower.is_prime_fast(checks, &mut ctx).unwrap() {
                     primes.push_front(lower);
                 } else {
                     break;
