@@ -5,6 +5,10 @@ Cunningham chains have many uses particularly in cryptography.
 
 The program uses openssl's prime generator to find big primes and test for primality.
 
+Any chains found of sufficient size should be saved in **findings.yaml**. Contributions are welcome.
+Chains in **findings.yaml** are in the public domain–it is free for use by anyone for any purpose
+without restriction under copyright law.
+
 ## Building Cunningham Chain Generator
 1. Install Rust and rustup (https://www.rust-lang.org/en-US/install.html)
 1. Checkout the program:
