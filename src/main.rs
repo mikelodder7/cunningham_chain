@@ -46,7 +46,8 @@ fn main() {
     let primes = 
         match kind {
             CunninghamKind::FIRST => first_kind(bits, length, checks),
-            CunninghamKind::SECOND => second_kind(bits, length, checks)
+            CunninghamKind::SECOND => second_kind(bits, length, checks),
+            CunninghamKind::BITWIN => bi_twin_kind(bits, length, checks)
         };
 
     println!("\n");
@@ -80,7 +81,7 @@ fn first_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> 
         loop {
             let higher = primes.back().unwrap().lshift1().unwrap().increment().unwrap();
 
-            if higher.is_safe_prime_fast(checks, &mut ctx).unwrap() {
+            if higher.is_probably_safe_prime_fast(checks, &mut ctx).unwrap() {
                 primes.push_back(higher);
             } else {
                 let lower = primes.front().unwrap().rshift1().unwrap();
@@ -125,7 +126,7 @@ fn second_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber>
 
         loop {
             let higher = primes.back().unwrap().lshift1().unwrap().decrement().unwrap();
-            if higher.is_prime_fast(checks,&mut ctx).unwrap() {
+            if higher.is_prime_fast(checks, &mut ctx).unwrap() {
                 primes.push_back(higher);
             } else {
                 let lower = primes.front().unwrap().increment().unwrap().rshift1().unwrap();
@@ -149,4 +150,66 @@ fn second_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber>
     }
 
     primes
+}
+
+fn bi_twin_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> {
+    let mut ctx = BigNumber::new_context().unwrap();
+    let mut seed;
+    let mut right = LinkedList::new();
+    let mut left = LinkedList::new();
+    let mut stdout = std::io::stdout();
+    let mut attempt = 1;
+
+    loop {
+        println!("Attempt {}", attempt);
+        right.clear();
+        left.clear();
+
+        let mut search = 1;
+        print!("Seed attempt ");
+        loop {
+            print!("{}", search);
+            stdout.flush().unwrap();
+
+            let safe_p = BigNumber::generate_safe_prime(bits).unwrap();
+            let safe_p_2 = safe_p.sub_word(2).unwrap();
+            seed = safe_p.rshift1().unwrap();
+
+            if safe_p_2.is_prime_fast(checks, &mut ctx).unwrap() &&
+               seed.decrement().unwrap().is_prime_fast(checks, &mut ctx).unwrap() &&
+               seed.increment().unwrap().is_prime_fast(checks, &mut ctx).unwrap() {
+
+                right.push_back(safe_p);
+                left.push_back(safe_p_2);
+                break;
+            }
+            for _ in 0..search.to_string().len() {
+                print!("\x08");
+            }
+            search += 1
+        }
+        print!("\n");
+        stdout.flush().unwrap();
+
+        loop {
+            let r = right.back().unwrap().lshift1().unwrap().increment().unwrap();
+            let l = left.back().unwrap().lshift1().unwrap().decrement().unwrap();
+
+            if r.is_prime_fast(checks, &mut ctx).unwrap() &&
+               l.is_prime_fast(checks, &mut ctx).unwrap() {
+                right.push_back(r);
+                left.push_back(l);
+            } else {
+                break;
+            }
+        }
+
+        if right.len() >= length {
+            break;
+        }
+        attempt += 1
+    }
+
+    right.push_front(seed);
+    right
 }

@@ -1,7 +1,8 @@
 #[derive(Debug)]
 pub enum CunninghamKind {
     FIRST = 1,
-    SECOND = 2
+    SECOND = 2,
+    BITWIN = 3
 }
 
 pub enum CunninghamError {
@@ -13,6 +14,7 @@ impl CunninghamKind {
         match value {
             1 => Ok(CunninghamKind::FIRST),
             2 => Ok(CunninghamKind::SECOND),
+            3 => Ok(CunninghamKind::BITWIN),
             _ => Err(CunninghamError::InvalidKind(format!("Invalid kind selected. Cannot be {}", value)))
         }
     }

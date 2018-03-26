@@ -68,6 +68,13 @@ impl BigNumber {
         )
     }
 
+    pub fn is_probably_safe_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+        Ok(
+            self.modulus(&THREE, ctx)?.bignumber == TWO.bignumber &&
+            self.is_prime_fast(checks, ctx)?
+        )
+    }
+
     pub fn rand(size: usize) -> Result<BigNumber, ErrorStack> {
         let mut bn = BigNumber::new()?;
         BigNumRef::rand(&mut bn.bignumber, size as i32, MsbOption::MAYBE_ZERO, true)?;
@@ -120,6 +127,12 @@ impl BigNumber {
     pub fn rshift1(&self) -> Result<BigNumber, ErrorStack> {
         let mut bn = BigNumber::new()?;
         BigNumRef::rshift1(&mut bn.bignumber, &self.bignumber)?;
+        Ok(bn)
+    }
+
+    pub fn sub_word(&self, word: u32) -> Result<BigNumber, ErrorStack> {
+        let mut bn = BigNumber::new()?;
+        BigNumRef::sub_word(&mut bn.bignumber, word)?;
         Ok(bn)
     }
 
