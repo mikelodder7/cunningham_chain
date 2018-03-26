@@ -1,5 +1,5 @@
 # Cunningham Chain Generator
-Generate a cunningham chain for both 1st and 2nd kinds.
+Generate a cunningham chain for 1st, 2nd, and bi-twin kinds.
 
 Cunningham chains have many uses particularly in cryptography.
 
@@ -45,4 +45,4 @@ The following are allowed parameters
 
 *length* A positive integer. The minimum length of the Cunningham chain to find. The program will stop once it finds a chain equal to or longer than this value.
 
-*kind* 1 or 2. 1 = 1st kind. 2 = 2nd kind.
+*kind* 1 or 2 or 3. 1 = 1st kind. 2 = 2nd kind. 3 = Bi-Twin

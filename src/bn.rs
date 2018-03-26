@@ -49,30 +49,34 @@ impl BigNumber {
         Ok(bn)
     }
 
-    pub fn is_safe_prime(&self, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+    pub fn is_safe_prime(&self, ctx: &mut BigNumberContext, do_trial_division: bool) -> Result<bool, ErrorStack> {
         let prime_len = self.to_dec()?.len();
         let checks = prime_len.log2() as i32;
-        self.is_safe_prime_fast(checks, ctx)
+        self.is_safe_prime_fast(checks, ctx, do_trial_division)
     }
 
-    pub fn is_safe_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+    pub fn is_safe_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext, do_trial_division: bool) -> Result<bool, ErrorStack> {
         // according to https://eprint.iacr.org/2003/186.pdf
         // we can test if the number is congruent to 2 mod 3
         // for "safe prime" generation, check that (p-1)/2 is prime. Since a
         // prime is odd, just divide by 2
         //TODO: FUTURE see if ECPP would be faster that openssl.is_prime
         Ok(
-            self.modulus(&THREE, ctx)?.bignumber == TWO.bignumber &&
-            self.is_prime_fast(checks, ctx)? &&
-            self.rshift1()?.is_prime_fast(checks, ctx)?
+            self.is_congruent_to(&THREE, &TWO, ctx)? &&
+            self.is_prime_fast(checks, ctx, do_trial_division)? &&
+            self.rshift1()?.is_prime_fast(checks, ctx, do_trial_division)?
         )
     }
 
-    pub fn is_probably_safe_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+    pub fn is_probably_safe_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext, do_trial_division: bool) -> Result<bool, ErrorStack> {
         Ok(
-            self.modulus(&THREE, ctx)?.bignumber == TWO.bignumber &&
-            self.is_prime_fast(checks, ctx)?
+            self.is_congruent_to(&THREE, &TWO, ctx)? &&
+            self.is_prime_fast(checks, ctx, do_trial_division)?
         )
+    }
+
+    pub fn is_congruent_to(&self, modulo: &BigNumber, test: &BigNumber, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+        Ok(self.modulus(modulo, ctx)?.bignumber == test.bignumber)
     }
 
     pub fn rand(size: usize) -> Result<BigNumber, ErrorStack> {
@@ -81,14 +85,14 @@ impl BigNumber {
         Ok(bn)
     }
 
-    pub fn is_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
-        Ok(self.bignumber.is_prime(checks, &mut ctx.context)?)
+    pub fn is_prime_fast(&self, checks: i32, ctx: &mut BigNumberContext, do_trial_division: bool) -> Result<bool, ErrorStack> {
+        Ok(self.bignumber.is_prime_fasttest(checks, &mut ctx.context, do_trial_division)?)
     }
     
-    pub fn is_prime(&self, ctx: &mut BigNumberContext) -> Result<bool, ErrorStack> {
+    pub fn is_prime(&self, ctx: &mut BigNumberContext, do_trial_division: bool) -> Result<bool, ErrorStack> {
         let prime_len = self.to_dec()?.len();
         let checks = prime_len.log2() as i32;
-        self.is_prime_fast(checks, ctx)
+        self.is_prime_fast(checks, ctx, do_trial_division)
     }
 
     pub fn from_u32(n: usize) -> Result<BigNumber, ErrorStack> {

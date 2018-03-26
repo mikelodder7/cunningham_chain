@@ -41,13 +41,14 @@ fn main() {
     println!("Finding chain with {} bits and {} length of {:?} kind", bits, length, kind);
 
     let prime_len = BigNumber::rand(bits).unwrap().to_dec().unwrap().len();
+    let do_trial_division = prime_len < 30; //do trial division for numbers less than 30 digits
     let checks = prime_len.log2() as i32;
     //TODO: If using ECPP then also print the certificate
     let primes = 
         match kind {
-            CunninghamKind::FIRST => first_kind(bits, length, checks),
-            CunninghamKind::SECOND => second_kind(bits, length, checks),
-            CunninghamKind::BITWIN => bi_twin_kind(bits, length, checks)
+            CunninghamKind::FIRST => first_kind(bits, length, checks, do_trial_division),
+            CunninghamKind::SECOND => second_kind(bits, length, checks, do_trial_division),
+            CunninghamKind::BITWIN => bi_twin_kind(bits, length, checks, do_trial_division)
         };
 
     println!("\n");
@@ -62,7 +63,7 @@ fn main() {
     println!("\n");
 }
 
-fn first_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> {
+fn first_kind(bits: usize, length: usize, checks: i32, do_trial_division: bool) -> LinkedList<BigNumber> {
     let mut ctx = BigNumber::new_context().unwrap();
     let mut primes = LinkedList::new();
     let mut attempt = 1;
@@ -81,12 +82,12 @@ fn first_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> 
         loop {
             let higher = primes.back().unwrap().lshift1().unwrap().increment().unwrap();
 
-            if higher.is_probably_safe_prime_fast(checks, &mut ctx).unwrap() {
+            if higher.is_probably_safe_prime_fast(checks, &mut ctx, do_trial_division).unwrap() {
                 primes.push_back(higher);
             } else {
                 let lower = primes.front().unwrap().rshift1().unwrap();
 
-                if lower.is_prime_fast(checks, &mut ctx).unwrap() {
+                if lower.is_prime_fast(checks, &mut ctx, do_trial_division).unwrap() {
                     primes.push_front(lower);
                 } else {
                     break;
@@ -108,7 +109,7 @@ fn first_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> 
     primes
 }
 
-fn second_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> {
+fn second_kind(bits: usize, length: usize, checks: i32, do_trial_division: bool) -> LinkedList<BigNumber> {
     let mut ctx = BigNumber::new_context().unwrap();
     let mut primes = LinkedList::new();
     let mut stdout = std::io::stdout();
@@ -126,11 +127,12 @@ fn second_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber>
 
         loop {
             let higher = primes.back().unwrap().lshift1().unwrap().decrement().unwrap();
-            if higher.is_prime_fast(checks, &mut ctx).unwrap() {
-                primes.push_back(higher);
+            if higher.is_congruent_to(&bn::THREE, &bn::ONE, &mut ctx).unwrap() &&
+               higher.is_prime_fast(checks, &mut ctx, do_trial_division).unwrap() {
+               primes.push_back(higher);
             } else {
                 let lower = primes.front().unwrap().increment().unwrap().rshift1().unwrap();
-                if lower.is_prime_fast(checks, &mut ctx).unwrap() {
+                if lower.is_prime_fast(checks, &mut ctx, do_trial_division).unwrap() {
                     primes.push_front(lower);
                 } else {
                     break;
@@ -152,7 +154,7 @@ fn second_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber>
     primes
 }
 
-fn bi_twin_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber> {
+fn bi_twin_kind(bits: usize, length: usize, checks: i32, do_trial_division: bool) -> LinkedList<BigNumber> {
     let mut ctx = BigNumber::new_context().unwrap();
     let mut seed;
     let mut right = LinkedList::new();
@@ -175,9 +177,10 @@ fn bi_twin_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber
             let safe_p_2 = safe_p.sub_word(2).unwrap();
             seed = safe_p.rshift1().unwrap();
 
-            if safe_p_2.is_prime_fast(checks, &mut ctx).unwrap() &&
-               seed.decrement().unwrap().is_prime_fast(checks, &mut ctx).unwrap() &&
-               seed.increment().unwrap().is_prime_fast(checks, &mut ctx).unwrap() {
+            if safe_p_2.is_congruent_to(&bn::THREE, &bn::ONE, &mut ctx).unwrap() &&
+               safe_p_2.is_prime_fast(checks, &mut ctx, do_trial_division).unwrap() &&
+               seed.decrement().unwrap().is_prime_fast(checks, &mut ctx, do_trial_division).unwrap() &&
+               seed.increment().unwrap().is_prime_fast(checks, &mut ctx, do_trial_division).unwrap() {
 
                 right.push_back(safe_p);
                 left.push_back(safe_p_2);
@@ -195,8 +198,9 @@ fn bi_twin_kind(bits: usize, length: usize, checks: i32) -> LinkedList<BigNumber
             let r = right.back().unwrap().lshift1().unwrap().increment().unwrap();
             let l = left.back().unwrap().lshift1().unwrap().decrement().unwrap();
 
-            if r.is_prime_fast(checks, &mut ctx).unwrap() &&
-               l.is_prime_fast(checks, &mut ctx).unwrap() {
+            if r.is_probably_safe_prime_fast(checks, &mut ctx, do_trial_division).unwrap() &&
+               l.is_congruent_to(&bn::THREE, &bn::ONE, &mut ctx).unwrap() &&
+               l.is_prime_fast(checks, &mut ctx, do_trial_division).unwrap() {
                 right.push_back(r);
                 left.push_back(l);
             } else {
