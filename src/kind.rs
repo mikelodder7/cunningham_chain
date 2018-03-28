@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CunninghamKind {
     FIRST = 1,
     SECOND = 2,
