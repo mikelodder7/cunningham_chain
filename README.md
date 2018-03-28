@@ -3,7 +3,7 @@ Generate a cunningham chain for 1st, 2nd, and bi-twin kinds.
 
 Cunningham chains have many uses particularly in cryptography.
 
-The program uses openssl's prime generator to find big primes and test for primality.
+The program uses openssl and GMP to find big primes and test for primality.
 
 Any chains found of sufficient size should be saved in **findings.md**. Contributions are welcome.
 Chains in **findings.md** are in the public domain–it is free for use by anyone for any purpose
