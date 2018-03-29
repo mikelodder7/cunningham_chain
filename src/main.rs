@@ -1,4 +1,3 @@
-extern crate openssl;
 extern crate gmp;
 extern crate int_traits;
 #[macro_use]

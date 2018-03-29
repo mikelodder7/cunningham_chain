@@ -4,7 +4,6 @@ version = "0.1.0"
 authors = ["Michael Lodder <redmike7@gmail.com>"]
 
 [dependencies]
-openssl = { version = "0.10.5" }
 rust-gmp = { version = "0.5.0" }
 lazy_static = { version = "1.0.0" }
 int_traits = { version = "0.1.1" }

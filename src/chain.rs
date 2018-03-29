@@ -1,4 +1,3 @@
-use openssl::bn::{BigNum, BigNumRef};
 use gmp::rand::RandState;
 use gmp::mpz::{Mpz, ProbabPrimeResult};
 
@@ -54,10 +53,11 @@ impl CunninghamChain {
     }
 
     fn first<F>(bits: usize, length: usize, checks: i32, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
-        let mut seed = BigNum::new().unwrap();
+        let mut random = RandState::new();
         let mut primes = LinkedList::new();
         let mut attempt = 1;
         let mut stdout = std::io::stdout();
+        let mut seed = random.urandom_2exp(bits as u64);
 
         print!("Attempt ");
         loop {
@@ -65,12 +65,12 @@ impl CunninghamChain {
             stdout.flush().unwrap();
             primes.clear();
 
-            //Generate a safe prime
-            CunninghamChain::_generate_safe_prime(&mut seed, bits);
+            if seed.bit_length() > bits + 4 {
+                return Err("Unable to find chain");
+            }
 
-            let p = CunninghamChain::_bignum_to_mpz(&seed);
-            primes.push_back(p.clone() >> 1);
-            primes.push_back(p);
+            seed = seed.nextprime();
+            primes.push_back(seed.clone());
 
             loop {
                 let higher = (primes.back().unwrap() << 1) + 1;
@@ -173,64 +173,57 @@ impl CunninghamChain {
     }
 
     fn bi_twin<F>(bits: usize, length: usize, checks: i32, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool  {
-        let mut seed;
-        let mut bignum = BigNum::new().unwrap();
-        let mut right = LinkedList::new();
-        let mut left = LinkedList::new();
+        let mut random = RandState::new();
+        let mut numbers = LinkedList::new();
         let mut stdout = std::io::stdout();
         let mut attempt = 1;
+        let mut seed = random.urandom_2exp(bits as u64);
 
+        print!("Attempt ");
         loop {
-            println!("Attempt {}", attempt);
-            right.clear();
-            left.clear();
-
-            let mut search = 1;
-            print!("Seed attempt ");
-            loop {
-                print!("{}", search);
-                stdout.flush().unwrap();
-
-                CunninghamChain::_generate_safe_prime(&mut bignum, bits);
-                let safe_p = CunninghamChain::_bignum_to_mpz(&bignum);
-                let safe_p_2 = safe_p.clone() - 2;
-
-                seed = safe_p.clone() >> 1;
-
-                if CunninghamChain::_is_congruent_to(&safe_p_2, &THREE, &ONE) &&
-                   is_prime(&safe_p_2, checks) &&
-                   is_prime(&(seed.clone() - 1), checks) &&
-                   is_prime(&(seed.clone() + 1), checks) {
-
-                    right.push_back(safe_p);
-                    left.push_back(safe_p_2);
-                    break;
-                }
-                for _ in 0..search.to_string().len() {
-                    print!("\x08");
-                }
-                search += 1
-            }
-            print!("\n");
+            print!("{}", attempt);
             stdout.flush().unwrap();
+            numbers.clear();
 
-            loop {
-                let r = (right.back().unwrap() << 1) + 1;
-                let l = (left.back().unwrap() << 1) - 1;
+            if seed.bit_length() > bits + 4 {
+                return Err("Unable to find chain");
+            }
 
-                if CunninghamChain::_is_congruent_to(&r, &THREE, &TWO) &&
-                   is_prime(&r, checks) &&
-                   CunninghamChain::_is_congruent_to(&l, &THREE, &ONE) &&
-                   is_prime(&l, checks) {
-                    right.push_back(r);
-                    left.push_back(l);
-                } else {
-                    break;
+            seed = seed.nextprime();
+
+            if is_prime(&(seed.clone() - 2), checks) {
+                numbers.push_back(seed.clone() - 1);
+            } else if is_prime(&(seed.clone() + 2), checks) {
+                numbers.push_back(seed.clone() + 1);
+            }
+
+            if numbers.len() > 0 {
+                loop {
+                    let higher = numbers.back().unwrap() << 1;
+
+                    if is_prime(&(higher.clone() + 1), checks) &&
+                       is_prime(&(higher.clone() - 1), checks) {
+                        numbers.push_back(higher);
+                    } else {
+                        let lower = numbers.front().unwrap() >> 1;
+
+                        if is_prime(&(lower.clone() + 1), checks) &&
+                           is_prime(&(lower.clone() - 1), checks) {
+                            numbers.push_front(lower);
+                        } else {
+                            break;
+                        }
+                    }
                 }
             }
 
-            if right.len() >= length {
+            if numbers.len() >= length {
+                print!("\n");
+                stdout.flush().unwrap();
                 break;
+            }
+            for _ in 0..attempt.to_string().len() {
+                print!("\x08");
             }
             attempt += 1
         }
@@ -238,16 +231,11 @@ impl CunninghamChain {
         Ok(
             CunninghamChain {
                 bits: seed.bit_length(),
-                length: right.len(),
+                length: numbers.len(),
                 kind: CunninghamKind::BITWIN,
-                starting_prime: seed.to_str_radix(10)
+                starting_prime: numbers.front().unwrap().to_str_radix(10)
             }
         )
-    }
-
-    #[inline]
-    fn _bignum_to_mpz(n: &BigNum) -> Mpz {
-        Mpz::from(&n.to_vec()[..])
     }
 
     #[inline]
@@ -267,11 +255,6 @@ impl CunninghamChain {
             ProbabPrimeResult::ProbablyPrime => true,
             ProbabPrimeResult::NotPrime => false
         }
-    }
-
-    #[inline]
-    fn _generate_safe_prime(number: &mut BigNum, bits: usize) {
-        BigNumRef::generate_prime(number, (bits + 1) as i32, true, None, None).unwrap();
     }
 }
 
