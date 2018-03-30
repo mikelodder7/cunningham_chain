@@ -5,6 +5,9 @@ use int_traits::IntTraits;
 
 use std;
 use std::io::Write;
+use std::thread;
+use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc;
 
 use std::collections::LinkedList;
 
@@ -45,31 +48,82 @@ impl CunninghamChain {
         };
         println!("Running {} checks for primality", checks);
 
+        let (tx, rx): (Sender<Result<CunninghamChain, &'static str>>, Receiver<Result<CunninghamChain, &'static str>>) = mpsc::channel();
+        let tx_1 = tx.clone();
+        let tx_2 = tx.clone();
+
+        let now = ::std::time::Instant::now();
         match kind {
-            CunninghamKind::FIRST => CunninghamChain::first(bits, length, checks, is_prime),
-            CunninghamKind::SECOND => CunninghamChain::second(bits, length, checks, is_prime),
-            CunninghamKind::BITWIN => CunninghamChain::bi_twin(bits, length, checks, is_prime)
-        }
+            CunninghamKind::FIRST => {
+                thread::spawn(move || {
+                    let mut prime_gen = AscendingPrimeGenerator::make(bits);
+                    println!("Beginning ascending search");
+                    tx_1.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished ascending search");
+                });
+                thread::spawn(move|| {
+                    let mut prime_gen = RandomPrimeGenerator::make(bits);
+                    println!("Beginning random search");
+                    tx_2.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished random search");
+                });
+                }
+            ,
+            CunninghamKind::SECOND => {
+                thread::spawn(move || {
+                    let mut prime_gen = AscendingPrimeGenerator::make(bits);
+                    println!("Beginning ascending search");
+                    tx_1.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished ascending search");
+                });
+                thread::spawn(move || {
+                    let mut prime_gen = RandomPrimeGenerator::make(bits);
+                    println!("Beginning random search");
+                    tx_2.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished random search");
+                });
+            },
+            CunninghamKind::BITWIN => {
+                thread::spawn(move || {
+                    let mut prime_gen = AscendingPrimeGenerator::make(bits);
+                    println!("Beginning ascending search");
+                    tx_1.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished ascending search");
+
+                });
+                thread::spawn(move || {
+                    let mut prime_gen = RandomPrimeGenerator::make(bits);
+                    println!("Beginning random search");
+                    tx_2.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished random search");
+                });
+
+            }
+        };
+        let result = rx.recv().unwrap();
+        println!("Total running time {}", now.elapsed().as_secs());
+        result
     }
 
-    fn first<F>(bits: usize, length: usize, checks: i32, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
-        let mut random = RandState::new();
+    fn first<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
+//        let mut random = RandState::new();
         let mut primes = LinkedList::new();
-        let mut attempt = 1;
-        let mut stdout = std::io::stdout();
-        let mut seed = random.urandom_2exp(bits as u64);
+//        let mut attempt = 1;
+//        let mut stdout = std::io::stdout();
+//        let mut seed = random.urandom_2exp(bits as u64);
+        let mut seed = Mpz::from(1) << bits;
 
-        print!("Attempt ");
+//        print!("Attempt ");
         loop {
-            print!("{}", attempt);
-            stdout.flush().unwrap();
+//            print!("{}", attempt);
+//            stdout.flush().unwrap();
             primes.clear();
 
             if seed.bit_length() > bits + 4 {
                 return Err("Unable to find chain");
             }
 
-            seed = seed.nextprime();
+            seed = prime_gen.nextprime();
             primes.push_back(seed.clone());
 
             loop {
@@ -90,14 +144,14 @@ impl CunninghamChain {
             }
 
             if primes.len() >= length {
-                print!("\n");
-                stdout.flush().unwrap();
+//                print!("\n");
+//                stdout.flush().unwrap();
                 break;
             }
-            for _ in 0..attempt.to_string().len() {
-                print!("\x08");
-            }
-            attempt += 1
+//            for _ in 0..attempt.to_string().len() {
+//                print!("\x08");
+//            }
+//            attempt += 1
         }
 
         let starting_prime = primes.front().unwrap();
@@ -112,24 +166,25 @@ impl CunninghamChain {
         )
     }
 
-    fn second<F>(bits: usize, length: usize, checks: i32, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
-        let mut random = RandState::new();
+    fn second<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
+//        let mut random = RandState::new();
         let mut primes = LinkedList::new();
-        let mut attempt = 1;
-        let mut stdout = std::io::stdout();
-        let mut seed = random.urandom_2exp(bits as u64);
+//        let mut attempt = 1;
+//        let mut stdout = std::io::stdout();
+//        let mut seed = random.urandom_2exp(bits as u64);
+        let mut seed = Mpz::from(1) << bits;
 
-        print!("Attempt ");
+//        print!("Attempt ");
         loop {
-            print!("{}", attempt);
-            stdout.flush().unwrap();
+//            print!("{}", attempt);
+//            stdout.flush().unwrap();
             primes.clear();
 
             if seed.bit_length() > bits + 4 {
                 return Err("Unable to find chain");
             }
 
-            seed = seed.nextprime();
+            seed = prime_gen.nextprime();
 
             primes.push_back(seed.clone());
 
@@ -150,14 +205,14 @@ impl CunninghamChain {
             }
 
             if primes.len() >= length {
-                print!("\n");
-                stdout.flush().unwrap();
+//                print!("\n");
+//                stdout.flush().unwrap();
                 break;
             }
-            for _ in 0..attempt.to_string().len() {
-                print!("\x08");
-            }
-            attempt += 1
+//            for _ in 0..attempt.to_string().len() {
+//                print!("\x08");
+//            }
+//            attempt += 1
         }
 
         let starting_prime = primes.front().unwrap();
@@ -172,24 +227,25 @@ impl CunninghamChain {
         )
     }
 
-    fn bi_twin<F>(bits: usize, length: usize, checks: i32, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool  {
-        let mut random = RandState::new();
+    fn bi_twin<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool  {
+//        let mut random = RandState::new();
         let mut numbers = LinkedList::new();
-        let mut stdout = std::io::stdout();
-        let mut attempt = 1;
-        let mut seed = random.urandom_2exp(bits as u64);
+//        let mut stdout = std::io::stdout();
+//        let mut attempt = 1;
+//        let mut seed = random.urandom_2exp(bits as u64);
+        let mut seed = Mpz::from(1) << bits;
 
-        print!("Attempt ");
+//        print!("Attempt ");
         loop {
-            print!("{}", attempt);
-            stdout.flush().unwrap();
+//            print!("{}", attempt);
+//            stdout.flush().unwrap();
             numbers.clear();
 
             if seed.bit_length() > bits + 4 {
                 return Err("Unable to find chain");
             }
 
-            seed = seed.nextprime();
+            seed = prime_gen.nextprime();
 
             if is_prime(&(seed.clone() - 2), checks) {
                 numbers.push_back(seed.clone() - 1);
@@ -218,14 +274,14 @@ impl CunninghamChain {
             }
 
             if numbers.len() >= length {
-                print!("\n");
-                stdout.flush().unwrap();
+//                print!("\n");
+//                stdout.flush().unwrap();
                 break;
             }
-            for _ in 0..attempt.to_string().len() {
-                print!("\x08");
-            }
-            attempt += 1
+//            for _ in 0..attempt.to_string().len() {
+//                print!("\x08");
+//            }
+//            attempt += 1
         }
         
         Ok(
@@ -258,4 +314,119 @@ impl CunninghamChain {
     }
 }
 
+#[inline]
+fn _is_congruent_to(a: &Mpz, m: &Mpz, e: &Mpz) -> bool {
+    a.modulus(m) == *e
+}
+
+trait PrimeGenerator {
+    fn nextprime(&mut self) -> Mpz;
+}
+
+struct AscendingPrimeGenerator {
+    current_seed: Mpz
+}
+
+impl AscendingPrimeGenerator {
+    pub fn make(bits: usize) -> AscendingPrimeGenerator {
+        AscendingPrimeGenerator {
+            current_seed: Mpz::from(2).pow(bits as u32 - 1) - 1
+        }
+    }
+}
+
+impl PrimeGenerator for AscendingPrimeGenerator {
+    fn nextprime(&mut self) -> Mpz {
+        let temp = self.current_seed.nextprime();
+        self.current_seed = temp.clone();
+        temp
+    }
+}
+
+struct RandomPrimeGenerator {
+    rand_state: RandState,
+    bits: u64
+}
+
+impl RandomPrimeGenerator {
+    pub fn make(bits: usize) -> RandomPrimeGenerator {
+        RandomPrimeGenerator {
+            rand_state: RandState::new(),
+            bits: bits as u64
+        }
+    }
+}
+
+impl PrimeGenerator for RandomPrimeGenerator {
+    fn nextprime(&mut self) -> Mpz {
+        self.rand_state.urandom_2exp(self.bits).nextprime()
+    }
+}
+
+trait KindFinder {
+    fn get_higher(&self, seed: &Mpz) -> Mpz;
+    fn check_higher<F>(&self, higher: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool;
+    fn get_lower(&self, seed: &Mpz) -> Mpz;
+    fn check_lower<F>(&self, lower: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool;
+}
+
+struct FirstKind {
+    checks: i32
+}
+
+impl KindFinder for FirstKind {
+    fn get_higher(&self, seed: &Mpz) -> Mpz {
+        seed.clone() << 1 + 1
+    }
+    fn check_higher<F>(&self, higher: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool {
+        _is_congruent_to(higher, &THREE, &TWO) &&
+        is_prime(higher, self.checks)
+    }
+    fn get_lower(&self, seed: &Mpz) -> Mpz {
+        seed.clone() >> 1
+    }
+    fn check_lower<F>(&self, lower: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool {
+        is_prime(lower, self.checks)
+    }
+}
+
+struct SecondKind {
+    checks: i32
+}
+
+impl KindFinder for SecondKind {
+    fn get_higher(&self, seed: &Mpz) -> Mpz {
+        seed.clone() << 1 + 1
+    }
+    fn check_higher<F>(&self, higher: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool {
+        _is_congruent_to(higher, &THREE, &ONE) &&
+        is_prime(higher, self.checks)
+    }
+    fn get_lower(&self, seed: &Mpz) -> Mpz {
+        (seed.clone() + 1) >> 1
+    }
+    fn check_lower<F>(&self, lower: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool {
+        is_prime(lower, self.checks)
+    }
+}
+
+struct BiTwinKind {
+    checks: i32
+}
+
+impl KindFinder for BiTwinKind {
+    fn get_higher(&self, seed: &Mpz) -> Mpz {
+        seed.clone() << 1
+    }
+    fn check_higher<F>(&self, higher: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool {
+        is_prime(&(higher.clone() + 1), self.checks) &&
+        is_prime(&(higher.clone() - 1), self.checks)
+    }
+    fn get_lower(&self, seed: &Mpz) -> Mpz {
+        seed.clone() >> 1
+    }
+    fn check_lower<F>(&self, lower: &Mpz, is_prime: F) -> bool where F: Fn(&Mpz, i32) -> bool {
+        self.check_higher(lower, is_prime)
+    }
+}
 
