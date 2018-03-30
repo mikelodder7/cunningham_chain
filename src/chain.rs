@@ -31,7 +31,7 @@ pub struct CunninghamChain {
     bits: usize,
     length: usize,
     kind: CunninghamKind,
-    starting_prime: String
+    starting_number: String
 }
 
 impl CunninghamChain {
@@ -160,7 +160,7 @@ impl CunninghamChain {
             CunninghamChain {
                 bits: starting_prime.bit_length(),
                 length: primes.len(),
-                starting_prime: starting_prime.to_str_radix(10),
+                starting_number: starting_prime.to_str_radix(10),
                 kind: CunninghamKind::FIRST
             }
         )
@@ -221,7 +221,7 @@ impl CunninghamChain {
             CunninghamChain {
                 bits: starting_prime.bit_length(),
                 length: primes.len(),
-                starting_prime: starting_prime.to_str_radix(10),
+                starting_number: starting_prime.to_str_radix(10),
                 kind: CunninghamKind::SECOND
             }
         )
@@ -289,7 +289,7 @@ impl CunninghamChain {
                 bits: seed.bit_length(),
                 length: numbers.len(),
                 kind: CunninghamKind::BITWIN,
-                starting_prime: numbers.front().unwrap().to_str_radix(10)
+                starting_number: numbers.front().unwrap().to_str_radix(10)
             }
         )
     }
