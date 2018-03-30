@@ -6,4 +6,3 @@ authors = ["Michael Lodder <redmike7@gmail.com>"]
 [dependencies]
 rust-gmp = { version = "0.5.0" }
 lazy_static = { version = "1.0.0" }
-int_traits = { version = "0.1.1" }

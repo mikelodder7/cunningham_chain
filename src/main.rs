@@ -1,5 +1,4 @@
 extern crate gmp;
-extern crate int_traits;
 #[macro_use]
 extern crate lazy_static;
 

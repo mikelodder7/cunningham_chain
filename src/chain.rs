@@ -1,8 +1,6 @@
 use gmp::rand::RandState;
 use gmp::mpz::{Mpz, ProbabPrimeResult};
 
-use int_traits::IntTraits;
-
 use std;
 use std::io::Write;
 use std::thread;
@@ -36,10 +34,11 @@ pub struct CunninghamChain {
 
 impl CunninghamChain {
     pub fn make(bits: usize, length: usize, kind: CunninghamKind) -> Result<CunninghamChain, &'static str> {
-        let prime_len = (bits as i32 / 10.log2()) as i32;
+        let prime_len = (bits as f64 / 10.0_f64.log2()) as i32 + 1;
         println!("Primes with {} digits", prime_len);
+        let precheck = (bits as f64).log2() as i32;
 
-        let checks = if prime_len <= 32 {bits.log2() as i32} else {bits.log2() as i32 * 2};
+        let checks = if prime_len <= 32 {precheck} else {precheck << 1};
 
         let is_prime= if prime_len <= 32 {
             CunninghamChain::_is_prime_with_factoring
