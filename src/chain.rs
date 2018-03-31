@@ -51,6 +51,8 @@ impl CunninghamChain {
         let tx_1 = tx.clone();
         let tx_2 = tx.clone();
         let tx_3 = tx.clone();
+        let tx_4 = tx.clone();
+
 
         let now = ::std::time::Instant::now();
         match kind {
@@ -73,6 +75,12 @@ impl CunninghamChain {
                     tx_3.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 2 search");
                 });
+                thread::spawn(move|| {
+                    let mut prime_gen = RandomPrimeGenerator::make(bits);
+                    println!("Beginning random 3 search");
+                    tx_4.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished random 3 search");
+                });
                 }
             ,
             CunninghamKind::SECOND => {
@@ -94,6 +102,12 @@ impl CunninghamChain {
                     tx_3.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 2 search");
                 });
+                thread::spawn(move || {
+                    let mut prime_gen = RandomPrimeGenerator::make(bits);
+                    println!("Beginning random 3 search");
+                    tx_4.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished random 3 search");
+                });
             },
             CunninghamKind::BITWIN => {
                 thread::spawn(move || {
@@ -114,6 +128,12 @@ impl CunninghamChain {
                     println!("Beginning random 2 search");
                     tx_3.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 2 search");
+                });
+                thread::spawn(move || {
+                    let mut prime_gen = RandomPrimeGenerator::make(bits);
+                    println!("Beginning random 3 search");
+                    tx_4.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                    println!("Finished random 3 search");
                 });
 
             }
