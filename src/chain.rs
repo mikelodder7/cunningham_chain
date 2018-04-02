@@ -30,7 +30,7 @@ pub struct CunninghamChain {
     bits: usize,
     length: usize,
     kind: CunninghamKind,
-    starting_number: String
+    origin: String
 }
 
 impl CunninghamChain {
@@ -235,7 +235,7 @@ impl CunninghamChain {
                     println!("Found already known chain {:?}", CunninghamChain {
                         bits: t.bit_length(),
                         length: primes.len(),
-                        starting_number: t.to_str_radix(10),
+                        origin: t.to_str_radix(10),
                         kind: CunninghamKind::FIRST
                     });
                 } else {
@@ -250,13 +250,13 @@ impl CunninghamChain {
 //            attempt += 1
         }
 
-        let starting_prime = primes.front().unwrap();
+        let origin = primes.front().unwrap();
 
         Ok(
             CunninghamChain {
-                bits: starting_prime.bit_length(),
+                bits: origin.bit_length(),
                 length: primes.len(),
-                starting_number: starting_prime.to_str_radix(10),
+                origin: origin.to_str_radix(10),
                 kind: CunninghamKind::FIRST
             }
         )
@@ -306,7 +306,7 @@ impl CunninghamChain {
                 println!("Found already known chain {:?}", CunninghamChain {
                         bits: t.bit_length(),
                         length: primes.len(),
-                        starting_number: t.to_str_radix(10),
+                        origin: t.to_str_radix(10),
                         kind: CunninghamKind::SECOND
                     });
                 } else {
@@ -321,13 +321,13 @@ impl CunninghamChain {
 //            attempt += 1
         }
 
-        let starting_prime = primes.front().unwrap();
+        let origin = primes.front().unwrap();
 
         Ok(
             CunninghamChain {
-                bits: starting_prime.bit_length(),
+                bits: origin.bit_length(),
                 length: primes.len(),
-                starting_number: starting_prime.to_str_radix(10),
+                origin: origin.to_str_radix(10),
                 kind: CunninghamKind::SECOND
             }
         )
@@ -385,7 +385,7 @@ impl CunninghamChain {
                 println!("Found already known chain {:?}", CunninghamChain {
                         bits: seed.bit_length(),
                         length: numbers.len(),
-                        starting_number: t.to_str_radix(10),
+                        origin: t.to_str_radix(10),
                         kind: CunninghamKind::BITWIN
                     });
                 } else {
@@ -400,14 +400,14 @@ impl CunninghamChain {
 //            attempt += 1
         }
 
-        let starting_num = numbers.front().unwrap();
+        let origin = numbers.front().unwrap();
 
         Ok(
             CunninghamChain {
-                bits: starting_num.bit_length(),
+                bits: origin.bit_length(),
                 length: numbers.len(),
                 kind: CunninghamKind::BITWIN,
-                starting_number: starting_num.to_str_radix(10)
+                origin: origin.to_str_radix(10)
             }
         )
     }
