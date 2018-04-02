@@ -11,6 +11,7 @@ use std::collections::LinkedList;
 
 use kind::CunninghamKind;
 use primes;
+use findings::{KNOWN_FIRST_CHAIN, KNOWN_SECOND_CHAIN, KNOWN_BITWIN_CHAIN};
 
 lazy_static! {
     pub static ref ONE: Mpz = { Mpz::from(1) };
@@ -229,9 +230,19 @@ impl CunninghamChain {
             }
 
             if primes.len() >= length {
+                let t = primes.front().unwrap();
+                if KNOWN_FIRST_CHAIN.contains(&t) {
+                    println!("Found already known chain {:?}", CunninghamChain {
+                        bits: t.bit_length(),
+                        length: primes.len(),
+                        starting_number: t.to_str_radix(10),
+                        kind: CunninghamKind::FIRST
+                    });
+                } else {
 //                print!("\n");
 //                stdout.flush().unwrap();
-                break;
+                    break;
+                }
             }
 //            for _ in 0..attempt.to_string().len() {
 //                print!("\x08");
@@ -290,9 +301,19 @@ impl CunninghamChain {
             }
 
             if primes.len() >= length {
+                let t = primes.front().unwrap();
+                if KNOWN_SECOND_CHAIN.contains(&t) {
+                println!("Found already known chain {:?}", CunninghamChain {
+                        bits: t.bit_length(),
+                        length: primes.len(),
+                        starting_number: t.to_str_radix(10),
+                        kind: CunninghamKind::SECOND
+                    });
+                } else {
 //                print!("\n");
 //                stdout.flush().unwrap();
-                break;
+                    break;
+                }
             }
 //            for _ in 0..attempt.to_string().len() {
 //                print!("\x08");
@@ -359,22 +380,34 @@ impl CunninghamChain {
             }
 
             if numbers.len() >= length {
+                let t = numbers.front().unwrap();
+                if KNOWN_BITWIN_CHAIN.contains(&t) {
+                println!("Found already known chain {:?}", CunninghamChain {
+                        bits: seed.bit_length(),
+                        length: numbers.len(),
+                        starting_number: t.to_str_radix(10),
+                        kind: CunninghamKind::BITWIN
+                    });
+                } else {
 //                print!("\n");
 //                stdout.flush().unwrap();
-                break;
+                    break;
+                }
             }
 //            for _ in 0..attempt.to_string().len() {
 //                print!("\x08");
 //            }
 //            attempt += 1
         }
-        
+
+        let starting_num = numbers.front().unwrap();
+
         Ok(
             CunninghamChain {
-                bits: seed.bit_length(),
+                bits: starting_num.bit_length(),
                 length: numbers.len(),
                 kind: CunninghamKind::BITWIN,
-                starting_number: numbers.front().unwrap().to_str_radix(10)
+                starting_number: starting_num.to_str_radix(10)
             }
         )
     }

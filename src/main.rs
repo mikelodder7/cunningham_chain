@@ -10,6 +10,7 @@ use kind::CunninghamKind;
 mod kind;
 mod primes;
 mod chain;
+mod findings;
 
 fn main() {
     const DEFAULT_BITS: usize = 16;
