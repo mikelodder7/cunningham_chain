@@ -8,6 +8,7 @@ use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
 
 use std::collections::LinkedList;
+use rand;
 
 use kind::CunninghamKind;
 use primes;
@@ -53,7 +54,9 @@ impl CunninghamChain {
         let tx_2 = tx.clone();
         let tx_3 = tx.clone();
         let tx_4 = tx.clone();
-
+        let seed1 = Mpz::from(rand::random::<u64>() + rand::random::<u64>() + rand::random::<u64>());
+        let seed2 = Mpz::from(rand::random::<u64>() + rand::random::<u64>() + rand::random::<u64>());
+        let seed3 = Mpz::from(rand::random::<u64>() + rand::random::<u64>() + rand::random::<u64>());
 
         let now = ::std::time::Instant::now();
         match kind {
@@ -65,20 +68,20 @@ impl CunninghamChain {
                     println!("Finished ascending search");
                 });
                 thread::spawn(move|| {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 1 search");
+                    println!("Beginning random 1 search with seed={}", seed1.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed1);
                     tx_2.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 1 search");
                 });
                 thread::spawn(move|| {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 2 search");
+                    println!("Beginning random 2 search with seed={}", seed2.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed2);
                     tx_3.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 2 search");
                 });
                 thread::spawn(move|| {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 3 search");
+                    println!("Beginning random 3 search with seed={}", seed3.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed3);
                     tx_4.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 3 search");
                 });
@@ -92,20 +95,20 @@ impl CunninghamChain {
                     println!("Finished ascending search");
                 });
                 thread::spawn(move || {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 1 search");
+                    println!("Beginning random 1 search with seed={}", seed1.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed1);
                     tx_2.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 1 search");
                 });
                 thread::spawn(move || {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 2 search");
+                    println!("Beginning random 2 search with seed={}", seed2.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed2);
                     tx_3.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 2 search");
                 });
                 thread::spawn(move || {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 3 search");
+                    println!("Beginning random 3 search with seed={}", seed3.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed3);
                     tx_4.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 3 search");
                 });
@@ -119,20 +122,20 @@ impl CunninghamChain {
 
                 });
                 thread::spawn(move || {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 1 search");
+                    println!("Beginning random 1 search with seed={}", seed1.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed1);
                     tx_2.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 1 search");
                 });
                 thread::spawn(move || {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 2 search");
+                    println!("Beginning random 2 search with seed={}", seed2.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed2);
                     tx_3.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 2 search");
                 });
                 thread::spawn(move || {
-                    let mut prime_gen = RandomPrimeGenerator::make(bits);
-                    println!("Beginning random 3 search");
+                    println!("Beginning random 3 search with seed={}", seed3.to_str_radix(10));
+                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed3);
                     tx_4.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
                     println!("Finished random 3 search");
                 });
@@ -467,9 +470,11 @@ struct RandomPrimeGenerator {
 }
 
 impl RandomPrimeGenerator {
-    pub fn make(bits: usize) -> RandomPrimeGenerator {
+    pub fn make(bits: usize, seed: Mpz) -> RandomPrimeGenerator {
+        let mut rand_state = RandState::new();
+        rand_state.seed(seed);
         RandomPrimeGenerator {
-            rand_state: RandState::new(),
+            rand_state,
             bits: bits as u64
         }
     }
