@@ -51,98 +51,31 @@ impl CunninghamChain {
         println!("Running {} checks for primality", checks);
 
         let (tx, rx): (Sender<Result<CunninghamChain, &'static str>>, Receiver<Result<CunninghamChain, &'static str>>) = mpsc::channel();
-        let tx_1 = tx.clone();
-        let tx_2 = tx.clone();
-        let tx_3 = tx.clone();
-        let tx_4 = tx.clone();
-        let seed1 = CunninghamChain::get_next_seed();
-        let seed2 = CunninghamChain::get_next_seed();
-        let seed3 = CunninghamChain::get_next_seed();
 
         let now = ::std::time::Instant::now();
-        match kind {
-            CunninghamKind::FIRST => {
-                thread::spawn(move || {
-                    let mut prime_gen = AscendingPrimeGenerator::make(bits);
-                    println!("Beginning ascending search");
-                    tx_1.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished ascending search");
-                });
-                thread::spawn(move|| {
-                    println!("Beginning random 1 search with seed={}", seed1.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed1);
-                    tx_2.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 1 search");
-                });
-                thread::spawn(move|| {
-                    println!("Beginning random 2 search with seed={}", seed2.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed2);
-                    tx_3.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 2 search");
-                });
-                thread::spawn(move|| {
-                    println!("Beginning random 3 search with seed={}", seed3.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed3);
-                    tx_4.send(CunninghamChain::first(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 3 search");
-                });
-                }
-            ,
-            CunninghamKind::SECOND => {
-                thread::spawn(move || {
-                    let mut prime_gen = AscendingPrimeGenerator::make(bits);
-                    println!("Beginning ascending search");
-                    tx_1.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished ascending search");
-                });
-                thread::spawn(move || {
-                    println!("Beginning random 1 search with seed={}", seed1.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed1);
-                    tx_2.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 1 search");
-                });
-                thread::spawn(move || {
-                    println!("Beginning random 2 search with seed={}", seed2.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed2);
-                    tx_3.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 2 search");
-                });
-                thread::spawn(move || {
-                    println!("Beginning random 3 search with seed={}", seed3.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed3);
-                    tx_4.send(CunninghamChain::second(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 3 search");
-                });
-            },
-            CunninghamKind::BITWIN => {
-                thread::spawn(move || {
-                    let mut prime_gen = AscendingPrimeGenerator::make(bits);
-                    println!("Beginning ascending search");
-                    tx_1.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished ascending search");
-
-                });
-                thread::spawn(move || {
-                    println!("Beginning random 1 search with seed={}", seed1.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed1);
-                    tx_2.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 1 search");
-                });
-                thread::spawn(move || {
-                    println!("Beginning random 2 search with seed={}", seed2.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed2);
-                    tx_3.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 2 search");
-                });
-                thread::spawn(move || {
-                    println!("Beginning random 3 search with seed={}", seed3.to_str_radix(10));
-                    let mut prime_gen = RandomPrimeGenerator::make(bits, seed3);
-                    tx_4.send(CunninghamChain::bi_twin(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
-                    println!("Finished random 3 search");
-                });
-
-            }
+        let func = match kind {
+            CunninghamKind::FIRST => CunninghamChain::first,
+            CunninghamKind::SECOND => CunninghamChain::second,
+            CunninghamKind::BITWIN => CunninghamChain::bi_twin,
         };
+
+        let tx_1 = tx.clone();
+        thread::spawn(move || {
+            let mut prime_gen = AscendingPrimeGenerator::make(bits);
+            println!("Beginning ascending search");
+            tx_1.send(func(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+            println!("Finished ascending search");
+        });
+        for i in 1..4 {
+            let seed = CunninghamChain::get_next_seed();
+            let tx_i = tx.clone();
+            thread::spawn(move || {
+                println!("Beginning random {} search with seed={}", i, seed.to_str_radix(10));
+                let mut prime_gen = RandomPrimeGenerator::make(bits, seed);
+                tx_i.send(func(bits, length, checks, &mut prime_gen, is_prime)).unwrap();
+                println!("Finished random {} search", i);
+            });
+        }
         let result = rx.recv().unwrap();
         println!("Total running time {}", now.elapsed().as_secs());
         result
@@ -196,17 +129,10 @@ impl CunninghamChain {
 //    }
 
     fn first<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
-//        let mut random = RandState::new();
         let mut primes = LinkedList::new();
-//        let mut attempt = 1;
-//        let mut stdout = std::io::stdout();
-//        let mut seed = random.urandom_2exp(bits as u64);
         let mut seed = Mpz::from(1) << bits;
 
-//        print!("Attempt ");
         loop {
-//            print!("{}", attempt);
-//            stdout.flush().unwrap();
             primes.clear();
 
             if seed.bit_length() > bits + 4 {
@@ -244,15 +170,9 @@ impl CunninghamChain {
                         chain: primes.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
                     });
                 } else {
-//                print!("\n");
-//                stdout.flush().unwrap();
                     break;
                 }
             }
-//            for _ in 0..attempt.to_string().len() {
-//                print!("\x08");
-//            }
-//            attempt += 1
         }
 
         let origin = primes.front().unwrap();
@@ -269,17 +189,10 @@ impl CunninghamChain {
     }
 
     fn second<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
-//        let mut random = RandState::new();
         let mut primes = LinkedList::new();
-//        let mut attempt = 1;
-//        let mut stdout = std::io::stdout();
-//        let mut seed = random.urandom_2exp(bits as u64);
         let mut seed = Mpz::from(1) << bits;
 
-//        print!("Attempt ");
         loop {
-//            print!("{}", attempt);
-//            stdout.flush().unwrap();
             primes.clear();
 
             if seed.bit_length() > bits + 4 {
@@ -317,15 +230,9 @@ impl CunninghamChain {
                         chain: primes.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
                     });
                 } else {
-//                print!("\n");
-//                stdout.flush().unwrap();
                     break;
                 }
             }
-//            for _ in 0..attempt.to_string().len() {
-//                print!("\x08");
-//            }
-//            attempt += 1
         }
 
         let origin = primes.front().unwrap();
@@ -342,17 +249,10 @@ impl CunninghamChain {
     }
 
     fn bi_twin<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool  {
-//        let mut random = RandState::new();
         let mut numbers = LinkedList::new();
-//        let mut stdout = std::io::stdout();
-//        let mut attempt = 1;
-//        let mut seed = random.urandom_2exp(bits as u64);
         let mut seed = Mpz::from(1) << bits;
 
-//        print!("Attempt ");
         loop {
-//            print!("{}", attempt);
-//            stdout.flush().unwrap();
             numbers.clear();
 
             if seed.bit_length() > bits + 4 {
@@ -405,15 +305,9 @@ impl CunninghamChain {
                           }).collect::<Vec<String>>()
                     });
                 } else {
-//                print!("\n");
-//                stdout.flush().unwrap();
                     break;
                 }
             }
-//            for _ in 0..attempt.to_string().len() {
-//                print!("\x08");
-//            }
-//            attempt += 1
         }
 
         let origin = numbers.front().unwrap();
