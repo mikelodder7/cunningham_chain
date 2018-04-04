@@ -31,7 +31,8 @@ pub struct CunninghamChain {
     bits: usize,
     length: usize,
     kind: CunninghamKind,
-    origin: String
+    origin: String,
+    chain: Vec<String>
 }
 
 impl CunninghamChain {
@@ -239,7 +240,8 @@ impl CunninghamChain {
                         bits: t.bit_length(),
                         length: primes.len(),
                         origin: t.to_str_radix(10),
-                        kind: CunninghamKind::FIRST
+                        kind: CunninghamKind::FIRST,
+                        chain: primes.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
                     });
                 } else {
 //                print!("\n");
@@ -260,7 +262,8 @@ impl CunninghamChain {
                 bits: origin.bit_length(),
                 length: primes.len(),
                 origin: origin.to_str_radix(10),
-                kind: CunninghamKind::FIRST
+                kind: CunninghamKind::FIRST,
+                chain: primes.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
             }
         )
     }
@@ -310,7 +313,8 @@ impl CunninghamChain {
                         bits: t.bit_length(),
                         length: primes.len(),
                         origin: t.to_str_radix(10),
-                        kind: CunninghamKind::SECOND
+                        kind: CunninghamKind::SECOND,
+                        chain: primes.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
                     });
                 } else {
 //                print!("\n");
@@ -331,7 +335,8 @@ impl CunninghamChain {
                 bits: origin.bit_length(),
                 length: primes.len(),
                 origin: origin.to_str_radix(10),
-                kind: CunninghamKind::SECOND
+                kind: CunninghamKind::SECOND,
+                chain: primes.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
             }
         )
     }
@@ -389,7 +394,15 @@ impl CunninghamChain {
                         bits: seed.bit_length(),
                         length: numbers.len(),
                         origin: t.to_str_radix(10),
-                        kind: CunninghamKind::BITWIN
+                        kind: CunninghamKind::BITWIN,
+                        chain: numbers.iter().map(|p| {
+                          let mut s = String::from("{");
+                          s.push_str(&(p.clone()-1).to_str_radix(10));
+                          s.push_str(", ");
+                          s.push_str(&(p.clone()+1).to_str_radix(10));
+                          s.push('}');
+                          s
+                          }).collect::<Vec<String>>()
                     });
                 } else {
 //                print!("\n");
@@ -410,7 +423,15 @@ impl CunninghamChain {
                 bits: origin.bit_length(),
                 length: numbers.len(),
                 kind: CunninghamKind::BITWIN,
-                origin: origin.to_str_radix(10)
+                origin: origin.to_str_radix(10),
+                chain: numbers.iter().map(|p| {
+                  let mut s = String::from("{");
+                  s.push_str(&(p.clone()-1).to_str_radix(10));
+                  s.push_str(", ");
+                  s.push_str(&(p.clone()+1).to_str_radix(10));
+                  s.push('}');
+                  s
+                  }).collect::<Vec<String>>()
             }
         )
     }
