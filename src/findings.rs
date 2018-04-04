@@ -68,6 +68,7 @@ fn get_known_second_chain() -> HashSet<Mpz> {
         Mpz::from_str_radix("4611686018428091431", 10).unwrap(),
         Mpz::from_str_radix("861715730411462341", 10).unwrap(),
         Mpz::from_str_radix("1674986350879671961", 10).unwrap(),
+        Mpz::from_str_radix("10778533281280055611", 10).unwrap(),
         Mpz::from_str_radix("10101837493672093280040555361", 10).unwrap(),
         Mpz::from_str_radix("72715672387515028471963509301", 10).unwrap(),
         Mpz::from_str_radix("39614081257132168796774190841", 10).unwrap(),
@@ -90,6 +91,7 @@ fn get_known_second_chain() -> HashSet<Mpz> {
 fn get_known_bi_twin_chain() -> HashSet<Mpz> {
     hashset![
         Mpz::from_str_radix("6400306986398717280", 10).unwrap(),
+        Mpz::from_str_radix("3355006646840301600", 10).unwrap(),
         Mpz::from_str_radix("15702824270839018740", 10).unwrap(),
         Mpz::from_str_radix("9223372036882100790", 10).unwrap(),
         Mpz::from_str_radix("31304362342553789833295320950", 10).unwrap(),
