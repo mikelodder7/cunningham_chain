@@ -417,6 +417,7 @@ trait KindFinder {
     fn check_higher<F>(&self, higher: &Mpz) -> bool;
     fn get_lower(&self, seed: &Mpz) -> Mpz;
     fn check_lower<F>(&self, lower: &Mpz) -> bool;
+    fn get_result(&self, number: &LinkedList<Mpz>) -> CunninghamChain;
 }
 
 //struct FirstKind<F, P> where F: Fn(&Mpz, i32) -> bool, P: PrimeGenerator {
