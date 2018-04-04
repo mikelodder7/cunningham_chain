@@ -29,8 +29,8 @@ fn get_known_first_chain() -> HashSet<Mpz> {
     hashset![
         Mpz::from_str_radix("18088387217903330459", 10).unwrap(),
         Mpz::from_str_radix("4611686018427395339", 10).unwrap(),
-        Mpz::from_str_radix("14961027376987860299", 10).unwrap(),
         Mpz::from_str_radix("4611686018430476039", 10).unwrap(),
+        Mpz::from_str_radix("14961027376987860299", 10).unwrap(),
         Mpz::from_str_radix("18387163427137165079", 10).unwrap(),
         Mpz::from_str_radix("201753609400367309", 10).unwrap(),
         Mpz::from_str_radix("33376463607021642560387296949", 10).unwrap(),
@@ -64,11 +64,12 @@ fn get_known_second_chain() -> HashSet<Mpz> {
     hashset![
         Mpz::from_str_radix("8200568588273131201", 10).unwrap(),
         Mpz::from_str_radix("7119585911130398911", 10).unwrap(),
+        Mpz::from_str_radix("10778533281280055611", 10).unwrap(),
         Mpz::from_str_radix("3623684585367099991", 10).unwrap(),
         Mpz::from_str_radix("4611686018428091431", 10).unwrap(),
         Mpz::from_str_radix("861715730411462341", 10).unwrap(),
         Mpz::from_str_radix("1674986350879671961", 10).unwrap(),
-        Mpz::from_str_radix("10778533281280055611", 10).unwrap(),
+        Mpz::from_str_radix("67900120189714574549279004031", 10).unwrap(),
         Mpz::from_str_radix("10101837493672093280040555361", 10).unwrap(),
         Mpz::from_str_radix("72715672387515028471963509301", 10).unwrap(),
         Mpz::from_str_radix("39614081257132168796774190841", 10).unwrap(),
@@ -93,10 +94,11 @@ fn get_known_bi_twin_chain() -> HashSet<Mpz> {
         Mpz::from_str_radix("6400306986398717280", 10).unwrap(),
         Mpz::from_str_radix("3355006646840301600", 10).unwrap(),
         Mpz::from_str_radix("15702824270839018740", 10).unwrap(),
+        Mpz::from_str_radix("14834106023628140130", 10).unwrap(),
         Mpz::from_str_radix("9223372036882100790", 10).unwrap(),
-        Mpz::from_str_radix("31304362342553789833295320950", 10).unwrap(),
         Mpz::from_str_radix("40407349974688373120161404540", 10).unwrap(),
+        Mpz::from_str_radix("31304362342553789833295320950", 10).unwrap(),
         Mpz::from_str_radix("39305625173752193344105530353982143730", 10).unwrap(),
-        Mpz::from_str_radix("392393888434791734846979273737983457731877192100", 10).unwrap()
     ]
 }
+
