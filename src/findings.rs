@@ -28,6 +28,7 @@ lazy_static! {
 fn get_known_first_chain() -> HashSet<Mpz> {
     hashset![
         Mpz::from_str_radix("18088387217903330459", 10).unwrap(),
+        Mpz::from_str_radix("4611686018427395339", 10).unwrap(),
         Mpz::from_str_radix("14961027376987860299", 10).unwrap(),
         Mpz::from_str_radix("33376463607021642560387296949", 10).unwrap(),
         Mpz::from_str_radix("36857073504463708989820858829", 10).unwrap(),
