@@ -97,6 +97,7 @@ foreach my $prime (@bitwin) {
   say "        Mpz::from_str_radix(\"$prime\", 10).unwrap(),"
 }
 say <<EOF;
+        Mpz::from_str_radix(\"$last_prime\", 10).unwrap()
     ]
 }
 EOF

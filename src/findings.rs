@@ -99,6 +99,7 @@ fn get_known_bi_twin_chain() -> HashSet<Mpz> {
         Mpz::from_str_radix("40407349974688373120161404540", 10).unwrap(),
         Mpz::from_str_radix("31304362342553789833295320950", 10).unwrap(),
         Mpz::from_str_radix("39305625173752193344105530353982143730", 10).unwrap(),
+        Mpz::from_str_radix("392393888434791734846979273737983457731877192100", 10).unwrap()
     ]
 }
 
