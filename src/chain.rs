@@ -54,9 +54,9 @@ impl CunninghamChain {
         let tx_2 = tx.clone();
         let tx_3 = tx.clone();
         let tx_4 = tx.clone();
-        let seed1 = Mpz::from(rand::random::<u64>() + rand::random::<u64>() + rand::random::<u64>());
-        let seed2 = Mpz::from(rand::random::<u64>() + rand::random::<u64>() + rand::random::<u64>());
-        let seed3 = Mpz::from(rand::random::<u64>() + rand::random::<u64>() + rand::random::<u64>());
+        let seed1 = CunninghamChain::get_next_seed();
+        let seed2 = CunninghamChain::get_next_seed();
+        let seed3 = CunninghamChain::get_next_seed();
 
         let now = ::std::time::Instant::now();
         match kind {
@@ -413,6 +413,14 @@ impl CunninghamChain {
                 origin: origin.to_str_radix(10)
             }
         )
+    }
+
+    fn get_next_seed() -> Mpz {
+        let mut acc = Mpz::from(rand::random::<u64>());
+        for _ in 1..10 {
+            acc += Mpz::from(rand::random::<u64>());
+        }
+        acc
     }
 
     #[inline]

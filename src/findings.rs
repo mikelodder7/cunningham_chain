@@ -66,6 +66,7 @@ fn get_known_second_chain() -> HashSet<Mpz> {
         Mpz::from_str_radix("3623684585367099991", 10).unwrap(),
         Mpz::from_str_radix("4611686018428091431", 10).unwrap(),
         Mpz::from_str_radix("861715730411462341", 10).unwrap(),
+        Mpz::from_str_radix("1674986350879671961", 10).unwrap(),
         Mpz::from_str_radix("10101837493672093280040555361", 10).unwrap(),
         Mpz::from_str_radix("72715672387515028471963509301", 10).unwrap(),
         Mpz::from_str_radix("78611250347504386688211060697879905631", 10).unwrap(),
