@@ -417,8 +417,9 @@ impl CunninghamChain {
 
     fn get_next_seed() -> Mpz {
         let mut acc = Mpz::from(rand::random::<u64>());
-        for _ in 1..10 {
-            acc += Mpz::from(rand::random::<u64>());
+        for _ in 1..5 {
+            acc <<= rand::random::<u8>() as usize;
+            acc ^= Mpz::from(rand::random::<u64>());
         }
         acc
     }
