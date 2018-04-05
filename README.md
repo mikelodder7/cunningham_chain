@@ -35,6 +35,12 @@ cargo test
 ## Running Cunningham Chain Generator
 1. Once the executable is built, the program can be run
 ```
+cargo run bits=N length=L kind=K
+```
+
+or
+
+```
 ./cunningham_chain/target/release/cunningham_chain bits=N length=L kind=K
 ```
 
