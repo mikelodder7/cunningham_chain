@@ -41,7 +41,7 @@ cargo run bits=N length=L kind=K
 or
 
 ```
-./cunningham_chain/target/release/cunningham_chain bits=N length=L kind=K
+./target/release/cunningham_chain bits=N length=L kind=K
 ```
 
 All parameters are optional. Default values are bits=16, length=2, and kind=1
