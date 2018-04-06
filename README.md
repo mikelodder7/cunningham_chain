@@ -24,7 +24,7 @@ cd ./cunningham_chain
 cargo build --release
 ```
 
-5. Rust tests
+4. Rust tests
 
 ```
 cd ./cunningham_chain
