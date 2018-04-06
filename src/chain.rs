@@ -420,13 +420,13 @@ trait KindFinder {
     fn get_result(&self, number: &LinkedList<Mpz>) -> CunninghamChain;
 }
 
-//struct FirstKind<F, P> where F: Fn(&Mpz, i32) -> bool, P: PrimeGenerator {
+//struct FirstKind<F, P: PrimeGenerator> where F: Fn(&Mpz, i32) -> bool {
 //    checks: i32,
 //    prime_gen: P,
 //    is_prime: F
 //}
 //
-//impl<F, P> KindFinder for FirstKind<F, P> {
+//impl<F, P: PrimeGenerator> KindFinder for FirstKind<F, P: PrimeGenerator> where F: Fn(&Mpz, i32) -> bool {
 //    fn get_kind(&self) -> CunninghamKind {
 //        CunninghamKind::FIRST
 //    }
@@ -446,6 +446,16 @@ trait KindFinder {
 //    }
 //    fn check_lower<F>(&self, lower: &Mpz) -> bool {
 //        self.is_prime(lower, self.checks)
+//    }
+//    fn get_result(&self, number: &LinkedList<Mpz>) -> CunninghamChain {
+//        let origin = number.front().unwrap();
+//        CunninghamChain {
+//            bits: origin.bit_length(),
+//            length: number.len(),
+//            origin: origin.to_str_radix(10),
+//            kind: CunninghamKind::FIRST,
+//            chain: number.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
+//        }
 //    }
 //}
 //

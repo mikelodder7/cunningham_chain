@@ -25,13 +25,13 @@ fn main() {
 
     for arg in &args {
         if arg.starts_with("bits=") {
-            bits = arg.get(5..).unwrap_or("16").parse::<usize>().unwrap();
+            bits = arg.get(5..).unwrap_or("16").parse::<usize>().expect("Unable to parse bits argument");
         }
         if arg.starts_with("length=") {
-            length = arg.get(7..).unwrap_or("2").parse::<usize>().unwrap();
+            length = arg.get(7..).unwrap_or("2").parse::<usize>().expect("Unable to parse length argument");
         }
         if arg.starts_with("kind=") {
-            let k = arg.get(5..).unwrap_or("1").parse::<u32>().unwrap();
+            let k = arg.get(5..).unwrap_or("1").parse::<u32>().expect("Unable to parse kind argument");
             kind = CunninghamKind::from_u32(k).unwrap_or(CunninghamKind::FIRST);
         }
     }
