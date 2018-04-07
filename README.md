@@ -17,7 +17,6 @@ without restriction under copyright law.
 git clone https://github.com/mikelodder7/cunningham_chain.git
 ```
 
-3. This relies on the openssl crate. See https://crates.io/crates/openssl to install the necessary dependecies.
 3. Build the executable
 
 ```
@@ -25,7 +24,7 @@ cd ./cunningham_chain
 cargo build --release
 ```
 
-5. Rust tests
+4. Rust tests
 
 ```
 cd ./cunningham_chain
