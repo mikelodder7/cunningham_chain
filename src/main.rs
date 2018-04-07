@@ -41,7 +41,7 @@ fn main() {
     let result = CunninghamChain::make(bits, length, kind);
 
     match result {
-        Ok(r) =>  println!("{:?}", r),
+        Ok(r) =>  println!("{:#?}", r),
         Err(m) => println!("{}", m)
     }
     println!("\n");
