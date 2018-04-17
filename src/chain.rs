@@ -162,7 +162,7 @@ impl CunninghamChain {
             if primes.len() >= length {
                 let t = primes.front().unwrap();
                 if KNOWN_FIRST_CHAIN.contains(&t) {
-                    println!("Found already known chain {:?}", CunninghamChain {
+                    println!("Found already known chain {:#?}", CunninghamChain {
                         bits: t.bit_length(),
                         length: primes.len(),
                         origin: t.to_str_radix(10),
@@ -222,7 +222,7 @@ impl CunninghamChain {
             if primes.len() >= length {
                 let t = primes.front().unwrap();
                 if KNOWN_SECOND_CHAIN.contains(&t) {
-                println!("Found already known chain {:?}", CunninghamChain {
+                println!("Found already known chain {:#?}", CunninghamChain {
                         bits: t.bit_length(),
                         length: primes.len(),
                         origin: t.to_str_radix(10),
@@ -290,7 +290,7 @@ impl CunninghamChain {
             if numbers.len() >= length {
                 let t = numbers.front().unwrap();
                 if KNOWN_BITWIN_CHAIN.contains(&t) {
-                println!("Found already known chain {:?}", CunninghamChain {
+                println!("Found already known chain {:#?}", CunninghamChain {
                         bits: seed.bit_length(),
                         length: numbers.len(),
                         origin: t.to_str_radix(10),
