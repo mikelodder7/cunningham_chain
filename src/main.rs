@@ -14,8 +14,8 @@ mod chain;
 mod findings;
 
 fn main() {
-    const DEFAULT_BITS: usize = 16;
-    const DEFAULT_LENGTH: usize = 2;
+    const DEFAULT_BITS: usize = 32;
+    const DEFAULT_LENGTH: usize = 3;
     const DEFAULT_KIND: CunninghamKind = CunninghamKind::FIRST;
     let args = env::args().collect::<Vec<String>>();
 

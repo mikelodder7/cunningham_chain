@@ -4,6 +4,6 @@ version = "0.1.0"
 authors = ["Michael Lodder <redmike7@gmail.com>"]
 
 [dependencies]
-rand = { version = "0.4.2" }
-rust-gmp = { version = "0.5.0" }
-lazy_static = { version = "1.0.0" }
+rand = "0.6"
+rust-gmp = "0.5"
+lazy_static = "1.2"

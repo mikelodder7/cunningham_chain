@@ -1,8 +1,6 @@
 use gmp::rand::RandState;
 use gmp::mpz::{Mpz, ProbabPrimeResult};
 
-use std;
-use std::io::Write;
 use std::thread;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
@@ -43,7 +41,7 @@ impl CunninghamChain {
 
         let checks = if prime_len <= 32 {precheck} else {precheck << 1};
 
-        let is_prime= if prime_len <= 32 {
+        let is_prime= if prime_len <= 64 {
             CunninghamChain::_is_prime_with_factoring
         } else {
             CunninghamChain::_is_prime
@@ -80,53 +78,6 @@ impl CunninghamChain {
         println!("Total running time {}", now.elapsed().as_secs());
         result
     }
-
-//    fn find_chain<F, T>(bits: usize,
-//                        length: usize,
-//                        prime_gen: &mut PrimeGenerator,
-//                        is_prime: F,
-//                        finder: &mut T) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool, T: KindFinder {
-//        let mut numbers = LinkedList::new();
-//        let mut seed = Mpz::from(1) << bits;
-//        loop {
-//            numbers.clear();
-//            if seed.bit_length() > bits + 4 {
-//                return Err("Unable to find chain");
-//            }
-//
-//            seed = finder.next_seed();
-//            numbers.push_back(seed);
-//
-//            loop {
-//                let higher = finder.get_higher(&numbers.back().unwrap());
-//
-//                if finder.check_higher(&higher) {
-//                    numbers.push_back(higher);
-//                } else {
-//                    let lower = finder.get_lower(&numbers.front().unwrap());
-//
-//                    if finder.check_lower(&lower) {
-//                        numbers.push_front(lower);
-//                    } else {
-//                        break;
-//                    }
-//                }
-//            }
-//            if numbers.len() >= length {
-//                break;
-//            }
-//        }
-//        let starting_number = numbers.front().unwrap();
-//
-//        Ok(
-//            CunninghamChain {
-//                bits: starting_number.bit_length(),
-//                length: numbers.len(),
-//                starting_number: starting_number.to_str_radix(10),
-//                kind: CunninghamKind::FIRST
-//            }
-//        )
-//    }
 
     fn first<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
         let mut primes = LinkedList::new();
@@ -345,7 +296,12 @@ impl CunninghamChain {
     }
 
     fn _is_prime_with_factoring(n: &Mpz, checks: i32) -> bool {
-        !primes::PRIMES.iter().any(|p| n.modulus(&Mpz::from(*p)).is_zero()) ||
+        for p in primes::PRIMES.iter() {
+            if n.is_multiple_of(p) {
+                return n == p;
+            }
+        }
+
         CunninghamChain::_is_prime(n, checks)
     }
 
@@ -375,7 +331,7 @@ struct AscendingPrimeGenerator {
 impl AscendingPrimeGenerator {
     pub fn make(bits: usize) -> AscendingPrimeGenerator {
         AscendingPrimeGenerator {
-            current_seed: Mpz::from(2).pow(bits as u32 - 1) - 1
+            current_seed: TWO.pow(bits as u32 - 1) - 1
         }
     }
 }
@@ -419,113 +375,3 @@ trait KindFinder {
     fn check_lower<F>(&self, lower: &Mpz) -> bool;
     fn get_result(&self, number: &LinkedList<Mpz>) -> CunninghamChain;
 }
-
-//struct FirstKind<F, P: PrimeGenerator> where F: Fn(&Mpz, i32) -> bool {
-//    checks: i32,
-//    prime_gen: P,
-//    is_prime: F
-//}
-//
-//impl<F, P: PrimeGenerator> KindFinder for FirstKind<F, P: PrimeGenerator> where F: Fn(&Mpz, i32) -> bool {
-//    fn get_kind(&self) -> CunninghamKind {
-//        CunninghamKind::FIRST
-//    }
-//    fn next_seed(&mut self) -> Mpz {
-//        self.prime_gen.nextprime()
-//    }
-//
-//    fn get_higher(&self, seed: &Mpz) -> Mpz {
-//        seed.clone() << 1 + 1
-//    }
-//    fn check_higher<F>(&self, higher: &Mpz) -> bool {
-//        _is_congruent_to(higher, &THREE, &TWO) &&
-//        self.is_prime(higher, self.checks)
-//    }
-//    fn get_lower(&self, seed: &Mpz) -> Mpz {
-//        seed.clone() >> 1
-//    }
-//    fn check_lower<F>(&self, lower: &Mpz) -> bool {
-//        self.is_prime(lower, self.checks)
-//    }
-//    fn get_result(&self, number: &LinkedList<Mpz>) -> CunninghamChain {
-//        let origin = number.front().unwrap();
-//        CunninghamChain {
-//            bits: origin.bit_length(),
-//            length: number.len(),
-//            origin: origin.to_str_radix(10),
-//            kind: CunninghamKind::FIRST,
-//            chain: number.iter().map(|p| p.to_str_radix(10)).collect::<Vec<String>>()
-//        }
-//    }
-//}
-//
-//struct SecondKind<F> where F: Fn(&Mpz, i32) -> bool {
-//    checks: i32,
-//    prime_gen: PrimeGenerator,
-//    is_prime: F
-//}
-//
-//impl<F> KindFinder for SecondKind<F> {
-//    fn get_kind(&self) -> CunninghamKind {
-//        CunninghamKind::SECOND
-//    }
-//    fn next_seed(&mut self) -> Mpz {
-//        self.prime_gen.nextprime()
-//    }
-//    fn get_higher(&self, seed: &Mpz) -> Mpz {
-//        seed.clone() << 1 + 1
-//    }
-//    fn check_higher(&self, higher: &Mpz) -> bool {
-//        _is_congruent_to(higher, &THREE, &ONE) &&
-//        self.is_prime(higher, self.checks)
-//    }
-//    fn get_lower(&self, seed: &Mpz) -> Mpz {
-//        (seed.clone() + 1) >> 1
-//    }
-//    fn check_lower<F>(&self, lower: &Mpz) -> bool {
-//        self.is_prime(lower, self.checks)
-//    }
-//}
-//
-//struct BiTwinKind<F> where F: Fn(&Mpz, i32) -> bool {
-//    checks: i32,
-//    prime_gen: PrimeGenerator,
-//    is_prime: F
-//}
-//
-//impl<F> KindFinder for BiTwinKind<F> {
-//    fn get_kind(&self) -> CunninghamKind {
-//        CunninghamKind::BITWIN
-//    }
-//    fn next_seed(&mut self) -> Mpz {
-//        let mut seed;
-//        let mut result;
-//
-//        loop {
-//            seed = self.prime_gen.nextprime();
-//
-//            if self.is_prime(&(seed.clone() - 2), self.checks) {
-//                result = seed.clone() - 1;
-//                break;
-//            } else if self.is_prime(&(seed.clone() + 2), self.checks) {
-//                result = seed.clone() + 1;
-//                break;
-//            }
-//        }
-//        result
-//    }
-//    fn get_higher(&self, seed: &Mpz) -> Mpz {
-//        seed.clone() << 1
-//    }
-//    fn check_higher(&self, higher: &Mpz) -> bool {
-//        self.is_prime(&(higher.clone() + 1), self.checks) &&
-//        self.is_prime(&(higher.clone() - 1), self.checks)
-//    }
-//    fn get_lower(&self, seed: &Mpz) -> Mpz {
-//        seed.clone() >> 1
-//    }
-//    fn check_lower(&self, lower: &Mpz) -> bool {
-//        self.check_higher(lower)
-//    }
-//}
-//

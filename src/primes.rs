@@ -11,14 +11,15 @@
  */
 
 use std::vec::Vec;
+use gmp::mpz::Mpz;
 
 
 lazy_static! {
-    pub static ref PRIMES: Vec<i32> = gen_primes();
+    pub static ref PRIMES: Vec<Mpz> = gen_primes();
 }
 
-fn gen_primes() -> Vec<i32> {
-    vec![
+fn gen_primes() -> Vec<Mpz> {
+    [
     2, 3, 5, 7, 11, 13, 17, 19,
     23, 29, 31, 37, 41, 43, 47, 53,
     59, 61, 67, 71, 73, 79, 83, 89,
@@ -403,5 +404,5 @@ fn gen_primes() -> Vec<i32> {
     27943, 27947, 27953, 27961, 27967, 27983, 27997, 28001,
     28019, 28027, 28031, 28051, 28057, 28069, 28081, 28087,
     28097, 28099, 28109, 28111, 28123, 28151, 28163, 28181,
-]
+].iter().map(|x| Mpz::from(*x)).collect()
 }
