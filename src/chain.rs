@@ -79,7 +79,7 @@ impl CunninghamChain {
         result
     }
 
-    fn first<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
+    fn first<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
         let mut primes = LinkedList::new();
         let mut seed = Mpz::from(1) << bits;
 
@@ -139,7 +139,7 @@ impl CunninghamChain {
         )
     }
 
-    fn second<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
+    fn second<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
         let mut primes = LinkedList::new();
         let mut seed = Mpz::from(1) << bits;
 
@@ -199,7 +199,7 @@ impl CunninghamChain {
         )
     }
 
-    fn bi_twin<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool  {
+    fn bi_twin<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool  {
         let mut numbers = LinkedList::new();
         let mut seed = Mpz::from(1) << bits;
 
