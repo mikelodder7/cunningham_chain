@@ -15,13 +15,7 @@ macro_rules! hashset {
 
 lazy_static! {
     pub static ref KNOWN_FIRST_CHAIN: HashSet<Mpz> = get_known_first_chain();
-}
-
-lazy_static! {
     pub static ref KNOWN_SECOND_CHAIN: HashSet<Mpz> = get_known_second_chain();
-}
-
-lazy_static! {
     pub static ref KNOWN_BITWIN_CHAIN: HashSet<Mpz> = get_known_bi_twin_chain();
 }
 
