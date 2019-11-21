@@ -1,6 +1,7 @@
+extern crate gmp;
 #[macro_use]
 extern crate lazy_static;
-extern crate gmp;
+extern crate num_traits;
 extern crate rand;
 
 use std::env;

@@ -1,12 +1,14 @@
 use gmp::rand::RandState;
 use gmp::mpz::{Mpz, ProbabPrimeResult};
 
+use num_traits::identities::One;
+use rand;
+
 use std::thread;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
 
 use std::collections::LinkedList;
-use rand;
 
 use kind::CunninghamKind;
 use primes;
@@ -31,7 +33,7 @@ pub struct CunninghamChain {
 }
 
 impl CunninghamChain {
-    pub fn make(bits: usize, length: usize, kind: CunninghamKind) -> Result<CunninghamChain, &'static str> {
+    pub fn make(bits: usize, length: usize, kind: CunninghamKind) -> Result<Self, &'static str> {
         let prime_len = (bits as f64 / 10.0_f64.log2()) as i32 + 1;
         println!("Primes with {} digits", prime_len);
         let precheck = (bits as f64).log2() as i32;
@@ -45,7 +47,7 @@ impl CunninghamChain {
         };
         println!("Running {} checks for primality", checks);
 
-        let (tx, rx): (Sender<Result<CunninghamChain, &'static str>>, Receiver<Result<CunninghamChain, &'static str>>) = mpsc::channel();
+        let (tx, rx): (Sender<Result<Self, &'static str>>, Receiver<Result<Self, &'static str>>) = mpsc::channel();
 
         let now = ::std::time::Instant::now();
         let func = match kind {
@@ -62,7 +64,7 @@ impl CunninghamChain {
             println!("Finished ascending search");
         });
         for i in 1..4 {
-            let seed = CunninghamChain::get_next_seed();
+            let seed = Self::get_next_seed();
             let tx_i = tx.clone();
             thread::spawn(move || {
                 println!("Beginning random {} search with seed={}", i, seed.to_str_radix(10));
@@ -72,7 +74,7 @@ impl CunninghamChain {
             });
         }
         let tx_2 = tx.clone();
-        let seed = CunninghamChain::get_next_seed();
+        let seed = Self::get_next_seed();
         thread::spawn(move || {
             println!("Beginning primecoin search with seed={}", seed.to_str_radix(10));
             tx_2.send(PrimeCoinChain::make(bits, length, kind, seed)).unwrap();
@@ -83,7 +85,7 @@ impl CunninghamChain {
         result
     }
 
-    fn first<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
+    fn first<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<Self, &'static str> where F: Fn(&Mpz, i32) -> bool {
         let mut primes = LinkedList::new();
         let mut seed = Mpz::from(1) << bits;
 
@@ -100,7 +102,7 @@ impl CunninghamChain {
             loop {
                 let higher = (primes.back().unwrap() << 1) + 1;
 
-                if CunninghamChain::_is_congruent_to(&higher, &THREE, &TWO) &&
+                if Self::_is_congruent_to(&higher, &THREE, &TWO) &&
                    is_prime(&higher, checks) {
                     primes.push_back(higher);
                 } else {
@@ -117,7 +119,7 @@ impl CunninghamChain {
             if primes.len() >= length {
                 let t = primes.front().unwrap();
                 if KNOWN_FIRST_CHAIN.contains(&t) {
-                    println!("Found already known chain {:#?}", CunninghamChain {
+                    println!("Found already known chain {:#?}", Self {
                         bits: t.bit_length(),
                         length: primes.len(),
                         origin: t.to_str_radix(10),
@@ -133,7 +135,7 @@ impl CunninghamChain {
         let origin = primes.front().unwrap();
 
         Ok(
-            CunninghamChain {
+            Self {
                 bits: origin.bit_length(),
                 length: primes.len(),
                 origin: origin.to_str_radix(10),
@@ -143,7 +145,7 @@ impl CunninghamChain {
         )
     }
 
-    fn second<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool {
+    fn second<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<Self, &'static str> where F: Fn(&Mpz, i32) -> bool {
         let mut primes = LinkedList::new();
         let mut seed = Mpz::from(1) << bits;
 
@@ -161,7 +163,7 @@ impl CunninghamChain {
             loop {
                 let higher = (primes.back().unwrap() << 1) - 1;
 
-                if CunninghamChain::_is_congruent_to(&higher, &THREE, &ONE) &&
+                if Self::_is_congruent_to(&higher, &THREE, &ONE) &&
                    is_prime(&higher, checks) {
                    primes.push_back(higher);
                 } else {
@@ -177,7 +179,7 @@ impl CunninghamChain {
             if primes.len() >= length {
                 let t = primes.front().unwrap();
                 if KNOWN_SECOND_CHAIN.contains(&t) {
-                println!("Found already known chain {:#?}", CunninghamChain {
+                println!("Found already known chain {:#?}", Self {
                         bits: t.bit_length(),
                         length: primes.len(),
                         origin: t.to_str_radix(10),
@@ -193,7 +195,7 @@ impl CunninghamChain {
         let origin = primes.front().unwrap();
 
         Ok(
-            CunninghamChain {
+            Self {
                 bits: origin.bit_length(),
                 length: primes.len(),
                 origin: origin.to_str_radix(10),
@@ -203,7 +205,7 @@ impl CunninghamChain {
         )
     }
 
-    fn bi_twin<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<CunninghamChain, &'static str> where F: Fn(&Mpz, i32) -> bool  {
+    fn bi_twin<F>(bits: usize, length: usize, checks: i32, prime_gen: &mut dyn PrimeGenerator, is_prime: F) -> Result<Self, &'static str> where F: Fn(&Mpz, i32) -> bool  {
         let mut numbers = LinkedList::new();
         let mut seed = Mpz::from(1) << bits;
 
@@ -245,7 +247,7 @@ impl CunninghamChain {
             if numbers.len() >= length {
                 let t = numbers.front().unwrap();
                 if KNOWN_BITWIN_CHAIN.contains(&t) {
-                println!("Found already known chain {:#?}", CunninghamChain {
+                println!("Found already known chain {:#?}", Self {
                         bits: seed.bit_length(),
                         length: numbers.len(),
                         origin: t.to_str_radix(10),
@@ -268,7 +270,7 @@ impl CunninghamChain {
         let origin = numbers.front().unwrap();
 
         Ok(
-            CunninghamChain {
+            Self {
                 bits: origin.bit_length(),
                 length: numbers.len(),
                 kind: CunninghamKind::BITWIN,
@@ -306,14 +308,13 @@ impl CunninghamChain {
             }
         }
 
-        CunninghamChain::_is_prime(n, checks)
+        Self::_is_prime(n, checks)
     }
 
     #[inline]
     fn _is_prime(n: &Mpz, checks: i32) -> bool {
         match n.probab_prime(checks) {
-            ProbabPrimeResult::Prime => true,
-            ProbabPrimeResult::ProbablyPrime => true,
+            ProbabPrimeResult::Prime | ProbabPrimeResult::ProbablyPrime => true,
             ProbabPrimeResult::NotPrime => false
         }
     }
@@ -391,7 +392,10 @@ impl PrimeCoinChain {
         loop {
             primes.clear();
 
-            seed = rand_state.urandom_2exp(bits as u64) + 1;
+            seed = rand_state.urandom_2exp(bits as u64);
+            if !seed.tstbit(0) {
+                seed.setbit(0);
+            }
 
             if !Self::fermat(&seed) {
                 continue;
@@ -451,7 +455,11 @@ impl PrimeCoinChain {
         loop {
             primes.clear();
 
-            seed = rand_state.urandom_2exp(bits as u64) + 1;
+            seed = rand_state.urandom_2exp(bits as u64);
+
+            if !seed.tstbit(0) {
+                seed.setbit(0);
+            }
 
             if !Self::fermat(&seed) {
                 continue;
@@ -511,7 +519,11 @@ impl PrimeCoinChain {
         loop {
             numbers.clear();
 
-            seed = rand_state.urandom_2exp(bits as u64) + 1;
+            seed = rand_state.urandom_2exp(bits as u64);
+
+            if seed.tstbit(0) {
+                seed.clrbit(0);
+            }
 
             if Self::fermat(&(seed.clone() - 2)) {
                 numbers.push_back(seed.clone() - 1);
@@ -591,7 +603,7 @@ impl PrimeCoinChain {
     /// Perform Fermat's little theorem on the candidate to determine probable
     /// primality.
     fn fermat(n: &Mpz) -> bool {
-        TWO.powm(&(n - 1), n) == *ONE
+        TWO.powm(&(n - 1), n).is_one()
     }
 
     // Test probable primality of n = 2p +/- 1 based on Euler, Lagrange and Lifchitz
@@ -601,13 +613,13 @@ impl PrimeCoinChain {
         let n_mod8 = n.modulus(&EIGHT);
         let mut passed = false;
         if sophie_germain && n_mod8 == *SEVEN { // Euler & Lagrange
-            passed = rez == *ONE
+            passed = rez.is_one()
         } else if sophie_germain && n_mod8 == *THREE { //Lifchitz
             passed = (rez + 1) == *n
         } else if !sophie_germain && n_mod8 == *FIVE { //Lifchitz
             passed = (rez + 1) == *n
-        } else if !sophie_germain && n_mod8 == *ONE { //Lifchitz
-            passed = rez == *ONE
+        } else if !sophie_germain && n_mod8.is_one() { //Lifchitz
+            passed = rez.is_one()
         }
 
         passed
